@@ -23,7 +23,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
+      # El Android SDK ya viene instalado en las máquinas ubuntu-latest de GitHub
 
       - uses: gradle/actions/setup-gradle@v4
         with:
