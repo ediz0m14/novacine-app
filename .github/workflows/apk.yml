@@ -40,11 +40,14 @@ jobs:
           NOVACINE_KEYSTORE_PASSWORD: ${{ secrets.NOVACINE_KEYSTORE_PASSWORD }}
           NOVACINE_KEY_ALIAS: ${{ secrets.NOVACINE_KEY_ALIAS }}
           NOVACINE_KEY_PASSWORD: ${{ secrets.NOVACINE_KEY_PASSWORD }}
-        run: gradle :app:assembleRelease --no-daemon --stacktrace
+        # Con firma → versión final (release). Sin firma todavía → versión de prueba (debug), que igual se puede instalar.
+        run: |
+          if [ -n "$NOVACINE_KEYSTORE_FILE" ]; then gradle :app:assembleRelease --no-daemon --stacktrace
+          else gradle :app:assembleDebug --no-daemon --stacktrace; fi
 
       - name: Nombrar el APK
         run: |
-          f=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          f=$(ls app/build/outputs/apk/release/*.apk app/build/outputs/apk/debug/*.apk 2>/dev/null | head -1)
           cp "$f" NovaCine.apk
           ls -la NovaCine.apk
 
