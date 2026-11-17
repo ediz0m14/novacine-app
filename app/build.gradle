@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Número de versión: lo pone GitHub Actions (cada compilación sube 1). En local queda 1.
+def numero = (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+
+android {
+    namespace 'app.novacine'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'app.novacine'
+        minSdk 24
+        targetSdk 34
+        versionCode numero
+        versionName "1.0.${numero}"
+    }
+
+    // La firma sale de los «Secrets» del repositorio (nunca va en el código)
+    signingConfigs {
+        release {
+            def ks = System.getenv('NOVACINE_KEYSTORE_FILE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('NOVACINE_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('NOVACINE_KEY_ALIAS')
+                keyPassword System.getenv('NOVACINE_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('NOVACINE_KEYSTORE_FILE')) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
