@@ -119,7 +119,8 @@ public class MainActivity extends Activity {
         // Google no deja iniciar sesión desde un WebView marcado como tal («; wv»).
         // Además se añade «NovaCineApp» para que la web sepa que está dentro de la app.
         String ua = s.getUserAgentString().replace("; wv", "");
-        s.setUserAgentString(ua + " NovaCineApp/" + BuildConfigLite.version(this));
+        // En un televisor la web entra en «modo TV» (control remoto): ver components/ModoTV.jsx en la web
+        s.setUserAgentString(ua + " NovaCineApp/" + BuildConfigLite.version(this) + (esTV() ? " NovaCineTV" : ""));
     }
 
     private String destinoDe(Intent i) {
@@ -148,8 +149,19 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
         if (vistaCompleta != null) { cerrarPantallaCompleta(); return; }
-        if (web.canGoBack()) { web.goBack(); return; }
-        super.onBackPressed();
+        // Primero la web: cierra una ventana abierta o saca el foco del reproductor (window.ncAtras)
+        web.evaluateJavascript("(function(){try{return !!(window.ncAtras&&window.ncAtras())}catch(e){return false}})()", r -> {
+            if ("true".equals(r)) return;
+            if (web.canGoBack()) web.goBack();
+            else MainActivity.super.onBackPressed();
+        });
+    }
+
+    /** ¿Es un televisor (Android TV / Google TV)? */
+    private boolean esTV() {
+        android.app.UiModeManager ui = (android.app.UiModeManager) getSystemService(UI_MODE_SERVICE);
+        return (ui != null && ui.getCurrentModeType() == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION)
+            || getPackageManager().hasSystemFeature("android.software.leanback");
     }
 
     // ───────────────────────── Lista de bloqueo ─────────────────────────

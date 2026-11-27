@@ -10,6 +10,7 @@ App de Android que abre **novacine.app** en un WebView propio con escudo anti-pu
   Al abrirse descarga además `https://novacine.app/app/bloqueo.txt` (se puede ampliar sin sacar otro APK; `!dominio` desbloquea).
 - Telegram, redes y descargas se abren fuera solo si el usuario toca el enlace.
 - Pantalla completa del video en horizontal, botón «atrás», subir imágenes, página «Sin conexión».
+- **Android TV / Google TV**: aparece en el menú del televisor (banner `drawable-xhdpi/banner.png`), no exige pantalla táctil y añade `NovaCineTV` al user agent para que la web active su modo TV (control remoto). El botón Atrás pregunta primero a la web (`window.ncAtras()`).
 - La web puede saber que está dentro de la app: el user agent incluye `NovaCineApp/1.0.N` y existe `window.NovaCineApp`.
 
 ## Compilar

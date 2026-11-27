@@ -4,9 +4,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- También para Android TV / Google TV: no necesita pantalla táctil -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+
     <application
         android:label="NovaCine"
         android:icon="@mipmap/ic_launcher"
+        android:banner="@drawable/banner"
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Tema"
         android:hardwareAccelerated="true"
@@ -23,6 +28,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- aparece en el menú de aplicaciones del televisor -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
             <!-- Los enlaces de novacine.app (p. ej. compartidos por Telegram) pueden abrirse con la app -->
             <intent-filter>
