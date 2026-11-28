@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -11,6 +12,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.widget.Toast;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -398,7 +402,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    /** Lo que la web puede pedirle a la app: window.NovaCineApp.abrirFuera(url) y window.NovaCineApp.version() */
+    /** Lo que la web puede pedirle a la app: window.NovaCineApp.abrirFuera(url), .version() y .guardarImagen(dataUrl, nombre) */
     private class Puente {
         @JavascriptInterface
         public void abrirFuera(String url) {
@@ -408,6 +412,27 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String version() { return BuildConfigLite.version(MainActivity.this); }
+
+        /** Guarda en la galería (Imágenes/NovaCine) una imagen que la web hizo: data:image/png;base64,… · devuelve true si se guardó */
+        @JavascriptInterface
+        public boolean guardarImagen(String dataUrl, String nombre) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || dataUrl == null) return false; // Android 9 o menos: la web muestra la imagen para guardarla a mano
+            try {
+                int coma = dataUrl.indexOf(',');
+                byte[] bytes = Base64.decode(dataUrl.substring(coma + 1), Base64.DEFAULT);
+                String limpio = (nombre == null || nombre.isEmpty() ? "novacine" : nombre).replaceAll("[^A-Za-z0-9._-]", "-");
+                if (!limpio.endsWith(".png")) limpio += ".png";
+                ContentValues v = new ContentValues();
+                v.put(MediaStore.Images.Media.DISPLAY_NAME, limpio);
+                v.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                v.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/NovaCine");
+                Uri u = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v);
+                if (u == null) return false;
+                try (java.io.OutputStream o = getContentResolver().openOutputStream(u)) { o.write(bytes); }
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Imagen guardada en la galería (NovaCine)", Toast.LENGTH_SHORT).show());
+                return true;
+            } catch (Exception e) { return false; }
+        }
     }
 
     // ───────────────────────── Utilidades ─────────────────────────
